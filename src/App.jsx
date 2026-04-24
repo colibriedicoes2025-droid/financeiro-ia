@@ -271,6 +271,7 @@ export default function App(){
   const toggle=id=>setTxs(p=>p.map(t=>t.id===id?{...t,status:t.status==="paid"?"pending":"paid"}:t));
   const del=id=>{setTxs(p=>p.filter(t=>t.id!==id));setShowDetail(null);};
   const add=t=>setTxs(p=>[...p,t]);
+  const clearAll=()=>{if(window.confirm("Tem certeza que quer zerar tudo?"))setTxs([]);};
   const prev=()=>{const d=new Date(calY,calM-1);setCalM(d.getMonth());setCalY(d.getFullYear());};
   const next=()=>{const d=new Date(calY,calM+1);setCalM(d.getMonth());setCalY(d.getFullYear());};
 
@@ -311,7 +312,7 @@ export default function App(){
             <button onClick={()=>setShowAI(true)} style={{padding:"7px 12px",background:C.purple+"20",border:`1px solid ${C.purple}44`,borderRadius:99,color:"#c4b5fd",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
               🤖 IA <div style={{width:5,height:5,background:C.green,borderRadius:"50%",animation:"pulse 2s infinite"}}/>
             </button>
-            <button onClick={()=>setShowAdd(true)} style={{width:36,height:36,background:`linear-gradient(135deg,${C.purple},#a78bfa)`,border:"none",borderRadius:10,color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 14px ${C.purple}44`,fontWeight:300}}>+</button>
+           <button onClick={clearAll} style={{padding:"7px 12px",background:C.red+"20",border:`1px solid ${C.red}44`,borderRadius:99,color:C.red,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🗑 Zerar</button> <button onClick={()=>setShowAdd(true)} style={{width:36,height:36,background:`linear-gradient(135deg,${C.purple},#a78bfa)`,border:"none",borderRadius:10,color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 14px ${C.purple}44`,fontWeight:300}}>+</button>
           </div>
         </div>
       </div>
