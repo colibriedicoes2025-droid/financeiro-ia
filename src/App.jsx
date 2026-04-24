@@ -20,23 +20,12 @@ const MF = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agost
 const MS = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 const WD = ["D","S","T","Q","Q","S","S"];
 
-const INIT = [
-  {id:1,type:"income",name:"Salário",value:8500,date:"2025-04-05",category:"salario",recurring:true,status:"paid"},
-  {id:2,type:"expense",name:"Aluguel",value:2200,date:"2025-04-10",category:"moradia",recurring:true,status:"paid"},
-  {id:3,type:"expense",name:"Supermercado",value:650,date:"2025-04-12",category:"alimentacao",recurring:false,status:"paid"},
-  {id:4,type:"expense",name:"Netflix",value:55,date:"2025-04-15",category:"lazer",recurring:true,status:"pending"},
-  {id:5,type:"expense",name:"Conta de Luz",value:180,date:"2025-04-18",category:"moradia",recurring:true,status:"pending"},
-  {id:6,type:"expense",name:"Academia",value:120,date:"2025-04-20",category:"saude",recurring:true,status:"pending"},
-  {id:7,type:"income",name:"Freelance Design",value:1200,date:"2025-04-22",category:"freelance",recurring:false,status:"pending"},
-  {id:8,type:"expense",name:"Combustível",value:300,date:"2025-04-25",category:"transporte",recurring:false,status:"pending"},
-  {id:9,type:"expense",name:"Plano de Saúde",value:450,date:"2025-04-28",category:"saude",recurring:true,status:"pending"},
-  {id:10,type:"expense",name:"Curso Online",value:97,date:"2025-04-30",category:"educacao",recurring:false,status:"pending"},
-];
+const INIT = [];
 
 const INIT_GOALS = [
-  {id:1,name:"Reserva de Emergência",target:25000,current:12500,icon:"🛡️",c:"#7c5cfc"},
-  {id:2,name:"Viagem Europa",target:15000,current:3200,icon:"✈️",c:"#FF9F43"},
-  {id:3,name:"Novo Notebook",target:5000,current:4100,icon:"💻",c:"#00d68f"},
+  {id:1,name:"Reserva de Emergência",target:0,current:0,icon:"🛡️",c:"#7c5cfc"},
+  {id:2,name:"Viagem Europa",target:0,current:0,icon:"✈️",c:"#FF9F43"},
+  {id:3,name:"Novo Notebook",target:0,current:0,icon:"💻",c:"#00d68f"},
 ];
 
 const fmt = v => new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(v);
