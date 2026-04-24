@@ -33,7 +33,7 @@ const INIT = [
   {id:10,type:"expense",name:"Curso Online",value:97,date:"2025-04-30",category:"educacao",recurring:false,status:"pending"},
 ];
 
-const GOALS = [
+const INIT_GOALS = [
   {id:1,name:"Reserva de Emergência",target:25000,current:12500,icon:"🛡️",c:"#7c5cfc"},
   {id:2,name:"Viagem Europa",target:15000,current:3200,icon:"✈️",c:"#FF9F43"},
   {id:3,name:"Novo Notebook",target:5000,current:4100,icon:"💻",c:"#00d68f"},
@@ -250,6 +250,8 @@ export default function App(){
   const [showAI,setShowAI]=useState(false);
   const [showDetail,setShowDetail]=useState(null);
   const [txF,setTxF]=useState("all");
+  const [goals,setGoals]=useState(INIT_GOALS);
+  const [editGoal,setEditGoal]=useState(null);
 
   const month=calM,year=calY;
   const mTxs=txs.filter(t=>{const d=new Date(t.date);return d.getMonth()===month&&d.getFullYear()===year;});
@@ -267,7 +269,8 @@ export default function App(){
     if(txF==="pending")return t.status==="pending";
     return true;
   }).sort((a,b)=>new Date(b.date)-new Date(a.date));
-
+  
+  const saveGoal=(id,current,target)=>setGoals(p=>p.map(g=>g.id===id?{...g,current:parseFloat(current)||0,target:parseFloat(target)||0}:g));
   const toggle=id=>setTxs(p=>p.map(t=>t.id===id?{...t,status:t.status==="paid"?"pending":"paid"}:t));
   const del=id=>{setTxs(p=>p.filter(t=>t.id!==id));setShowDetail(null);};
   const add=t=>setTxs(p=>[...p,t]);
@@ -558,7 +561,10 @@ export default function App(){
                   </div>
                   <div style={{textAlign:"right",flexShrink:0}}>
                     <div style={{fontSize:15,fontWeight:800,color:t.type==="income"?C.green:C.red}}>{t.type==="income"?"+":"-"}{fmtK(t.value)}</div>
-                    <Pill color={t.status==="paid"?C.green:C.yellow}>{t.status==="paid"?"✓ Pago":"⏳"}</Pill>
+                    <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                      <Pill color={g.c} sz={12}>{pct.toFixed(0)}%</Pill>
+                      <button onClick={()=>setEditGoal(g)} style={{padding:"4px 10px",background:C.purple+"22",border:`1px solid ${C.purple}44`,borderRadius:99,color:"#c4b5fd",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✏️ Editar</button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -571,7 +577,7 @@ export default function App(){
           <div style={{animation:"fadeUp .3s ease",padding:"14px 14px 16px"}}>
             <div style={{fontSize:20,fontWeight:800,letterSpacing:-.5,marginBottom:14}}>Metas Financeiras</div>
             <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:14}}>
-              {GOALS.map(g=>{
+              {goals.map(g=>{
                 const pct=Math.min(g.current/g.target*100,100);
                 return(
                   <div key={g.id} style={{background:C.card,border:`1px solid ${g.c}25`,borderRadius:20,padding:"18px 16px"}}>
@@ -708,6 +714,24 @@ export default function App(){
       </div>
 
       {/* SHEETS */}
+      <Sheet open={!!editGoal} onClose={()=>setEditGoal(null)} title="✏️ Editar Meta">
+  {editGoal&&(
+    <div style={{display:"flex",flexDirection:"column",gap:14}}>
+      <div style={{fontSize:16,fontWeight:700,textAlign:"center"}}>{editGoal.icon} {editGoal.name}</div>
+      <div>
+        <div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:6}}>VALOR ATUAL (R$)</div>
+        <input type="number" defaultValue={editGoal.current} id="gc" style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.text,fontSize:15,fontFamily:"inherit",outline:"none"}}/>
+      </div>
+      <div>
+        <div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:6}}>META TOTAL (R$)</div>
+        <input type="number" defaultValue={editGoal.target} id="gt" style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.text,fontSize:15,fontFamily:"inherit",outline:"none"}}/>
+      </div>
+      <button onClick={()=>{saveGoal(editGoal.id,document.getElementById("gc").value,document.getElementById("gt").value);setEditGoal(null);}} style={{padding:"15px",background:`linear-gradient(135deg,${C.purple},#a78bfa)`,border:"none",borderRadius:14,color:"#fff",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
+        Salvar
+      </button>
+    </div>
+  )}
+</Sheet>
       <Sheet open={showAdd} onClose={()=>setShowAdd(false)} title="Nova Transação">
         <TxForm onSave={add} onClose={()=>setShowAdd(false)}/>
       </Sheet>
