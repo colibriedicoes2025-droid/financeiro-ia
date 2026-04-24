@@ -145,10 +145,11 @@ function AIChat({txs}){
     setMsgs(p=>[...p,{r:"u",t:q}]);setLoading(true);
     try{
       const res=await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers: {"Content-Type": "application/json",
-                                "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY,
-                                "anthropic-dangerous-direct-browser-access": "true"
-                      },
+        method:"POST",headers:{
+          "Content-Type":"application/json",
+          "x-api-key":import.meta.env.VITE_ANTHROPIC_API_KEY,
+          "anthropic-dangerous-direct-browser-access":"true"
+        },
         body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:700,
           system:`Consultor financeiro pessoal inteligente. Responda em português, conciso (máx 3 parágrafos), prático e encorajador. Use emojis com moderação. Dados: ${ctx}`,
           messages:[{role:"user",content:q}]})
@@ -252,6 +253,7 @@ export default function App(){
   const [txF,setTxF]=useState("all");
   const [goals,setGoals]=useState(INIT_GOALS);
   const [editGoal,setEditGoal]=useState(null);
+  const [showClear,setShowClear]=useState(false);
 
   const month=calM,year=calY;
   const mTxs=txs.filter(t=>{const d=new Date(t.date);return d.getMonth()===month&&d.getFullYear()===year;});
@@ -269,12 +271,12 @@ export default function App(){
     if(txF==="pending")return t.status==="pending";
     return true;
   }).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  
-  const saveGoal=(id,current,target)=>setGoals(p=>p.map(g=>g.id===id?{...g,current:parseFloat(current)||0,target:parseFloat(target)||0}:g));
+
   const toggle=id=>setTxs(p=>p.map(t=>t.id===id?{...t,status:t.status==="paid"?"pending":"paid"}:t));
+  const saveGoal=(id,current,target)=>setGoals(p=>p.map(g=>g.id===id?{...g,current:parseFloat(current)||0,target:parseFloat(target)||0}:g));
+  const clearAll=()=>{setTxs([]);setShowClear(false);};
   const del=id=>{setTxs(p=>p.filter(t=>t.id!==id));setShowDetail(null);};
   const add=t=>setTxs(p=>[...p,t]);
-  const clearAll=()=>{if(window.confirm("Tem certeza que quer zerar tudo?"))setTxs([]);};
   const prev=()=>{const d=new Date(calY,calM-1);setCalM(d.getMonth());setCalY(d.getFullYear());};
   const next=()=>{const d=new Date(calY,calM+1);setCalM(d.getMonth());setCalY(d.getFullYear());};
 
@@ -315,7 +317,8 @@ export default function App(){
             <button onClick={()=>setShowAI(true)} style={{padding:"7px 12px",background:C.purple+"20",border:`1px solid ${C.purple}44`,borderRadius:99,color:"#c4b5fd",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
               🤖 IA <div style={{width:5,height:5,background:C.green,borderRadius:"50%",animation:"pulse 2s infinite"}}/>
             </button>
-           <button onClick={clearAll} style={{padding:"7px 12px",background:C.red+"20",border:`1px solid ${C.red}44`,borderRadius:99,color:C.red,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🗑 Zerar</button> <button onClick={()=>setShowAdd(true)} style={{width:36,height:36,background:`linear-gradient(135deg,${C.purple},#a78bfa)`,border:"none",borderRadius:10,color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 14px ${C.purple}44`,fontWeight:300}}>+</button>
+            <button onClick={()=>setShowClear(true)} style={{width:36,height:36,background:C.red+"20",border:`1px solid ${C.red}44`,borderRadius:10,color:C.red,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>🗑</button>
+            <button onClick={()=>setShowAdd(true)} style={{width:36,height:36,background:`linear-gradient(135deg,${C.purple},#a78bfa)`,border:"none",borderRadius:10,color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 14px ${C.purple}44`,fontWeight:300}}>+</button>
           </div>
         </div>
       </div>
@@ -561,10 +564,7 @@ export default function App(){
                   </div>
                   <div style={{textAlign:"right",flexShrink:0}}>
                     <div style={{fontSize:15,fontWeight:800,color:t.type==="income"?C.green:C.red}}>{t.type==="income"?"+":"-"}{fmtK(t.value)}</div>
-                    <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                      <Pill color={g.c} sz={12}>{pct.toFixed(0)}%</Pill>
-                      <button onClick={()=>setEditGoal(g)} style={{padding:"4px 10px",background:C.purple+"22",border:`1px solid ${C.purple}44`,borderRadius:99,color:"#c4b5fd",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✏️ Editar</button>
-                    </div>
+                    <Pill color={t.status==="paid"?C.green:C.yellow}>{t.status==="paid"?"✓ Pago":"⏳"}</Pill>
                   </div>
                 </div>
               ))}
@@ -589,7 +589,10 @@ export default function App(){
                           <div style={{fontSize:12,color:C.muted,marginTop:2}}>Meta: {fmt(g.target)}</div>
                         </div>
                       </div>
+                      <div style={{display:"flex",gap:6,alignItems:"center"}}>
                       <Pill color={g.c} sz={12}>{pct.toFixed(0)}%</Pill>
+                      <button onClick={()=>setEditGoal(g)} style={{padding:"4px 10px",background:C.purple+"22",border:`1px solid ${C.purple}44`,borderRadius:99,color:"#c4b5fd",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✏️ Editar</button>
+                    </div>
                     </div>
                     <Bar value={g.current} max={g.target} color={g.c} h={8}/>
                     <div style={{display:"flex",justifyContent:"space-between",marginTop:8}}>
@@ -714,24 +717,31 @@ export default function App(){
       </div>
 
       {/* SHEETS */}
+      <Sheet open={showClear} onClose={()=>setShowClear(false)} title="🗑 Zerar Tudo">
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <p style={{margin:0,fontSize:14,color:C.muted,textAlign:"center",lineHeight:1.6}}>Tem certeza que quer apagar todas as transações? Essa ação não pode ser desfeita.</p>
+          <button onClick={clearAll} style={{padding:"15px",background:C.red,border:"none",borderRadius:14,color:"#fff",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>Sim, zerar tudo</button>
+          <button onClick={()=>setShowClear(false)} style={{padding:"15px",background:C.card,border:`1px solid ${C.border}`,borderRadius:14,color:C.muted,fontWeight:700,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>Cancelar</button>
+        </div>
+      </Sheet>
       <Sheet open={!!editGoal} onClose={()=>setEditGoal(null)} title="✏️ Editar Meta">
-  {editGoal&&(
-    <div style={{display:"flex",flexDirection:"column",gap:14}}>
-      <div style={{fontSize:16,fontWeight:700,textAlign:"center"}}>{editGoal.icon} {editGoal.name}</div>
-      <div>
-        <div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:6}}>VALOR ATUAL (R$)</div>
-        <input type="number" defaultValue={editGoal.current} id="gc" style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.text,fontSize:15,fontFamily:"inherit",outline:"none"}}/>
-      </div>
-      <div>
-        <div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:6}}>META TOTAL (R$)</div>
-        <input type="number" defaultValue={editGoal.target} id="gt" style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.text,fontSize:15,fontFamily:"inherit",outline:"none"}}/>
-      </div>
-      <button onClick={()=>{saveGoal(editGoal.id,document.getElementById("gc").value,document.getElementById("gt").value);setEditGoal(null);}} style={{padding:"15px",background:`linear-gradient(135deg,${C.purple},#a78bfa)`,border:"none",borderRadius:14,color:"#fff",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit"}}>
-        Salvar
-      </button>
-    </div>
-  )}
-</Sheet>
+        {editGoal&&(
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            <div style={{fontSize:20,textAlign:"center"}}>{editGoal.icon} <span style={{fontWeight:700}}>{editGoal.name}</span></div>
+            <div>
+              <div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:6,letterSpacing:.8}}>VALOR ATUAL (R$)</div>
+              <input type="number" defaultValue={editGoal.current} id="gc" style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.text,fontSize:15,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+            </div>
+            <div>
+              <div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:6,letterSpacing:.8}}>META TOTAL (R$)</div>
+              <input type="number" defaultValue={editGoal.target} id="gt" style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.text,fontSize:15,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+            </div>
+            <button onClick={()=>{saveGoal(editGoal.id,document.getElementById("gc").value,document.getElementById("gt").value);setEditGoal(null);}} style={{padding:"15px",background:`linear-gradient(135deg,${C.purple},#a78bfa)`,border:"none",borderRadius:14,color:"#fff",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit",boxShadow:`0 4px 20px ${C.purple}44`}}>
+              Salvar Meta
+            </button>
+          </div>
+        )}
+      </Sheet>
       <Sheet open={showAdd} onClose={()=>setShowAdd(false)} title="Nova Transação">
         <TxForm onSave={add} onClose={()=>setShowAdd(false)}/>
       </Sheet>
